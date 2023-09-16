@@ -1,0 +1,7 @@
+INDEX VERSION 1.134+C:\Users\krlos\Desktop\Projetos\Spring Boot\BACK-END JAVA\.metadata\.plugins\org.eclipse.jdt.core
+3448925941.index
+2973278643.index
+1581669238.index
+2422777910.index
+1765930522.index
+1865797976.index

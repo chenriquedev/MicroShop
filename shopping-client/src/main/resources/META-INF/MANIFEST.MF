@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: org.henrique.java.backend.Main
+Class-Path: jakarta.validation-api-3.0.2.jar lombok-1.18.26.jar
+
