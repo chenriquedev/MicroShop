@@ -33,8 +33,7 @@ public class UserService {
 
     public UserDTO findById(Long userId){
         Optional<User> user = userRepository.findById(userId);
-        log.info(user.toString());
-        return user.map(userConverter::convertToDTO).orElseGet(() ->null);
+        return user.map(userConverter::convertToDTO).orElseThrow(() -> new UserErrorException("User Not Found"));
     }
 
     public UserDTO saveUser(UserDTO dto){
@@ -46,7 +45,7 @@ public class UserService {
             User saveUser = userRepository.save(userToSave);
             return userConverter.convertToDTO(saveUser);
         }
-        throw new UserErrorException("Cannot able to create user");
+        throw new UserErrorException("Could not create user, please, verify the fields and try again");
     }
 
     public boolean delete(Long id){

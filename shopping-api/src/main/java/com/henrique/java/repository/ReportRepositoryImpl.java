@@ -8,6 +8,7 @@ import jakarta.persistence.Query;
 import org.henrique.java.backend.DTO.ShopReportDTO;
 
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -57,8 +58,8 @@ public class ReportRepositoryImpl implements ReportRepository{
         Object[] result = (Object[]) query.getSingleResult();
         ShopReportDTO shopReportDTO = new ShopReportDTO();
         shopReportDTO.setCount(((Number) result[0]).intValue());
-        shopReportDTO.setTotal((Double) result[1]);
-        shopReportDTO.setMean((Double) result[2]);
+        shopReportDTO.setTotal((Double)result[1]);
+        shopReportDTO.setMean((Double)result[2]);
         return shopReportDTO;
     }
 }

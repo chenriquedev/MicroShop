@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @ControllerAdvice(basePackages = "com.henrique.java.controller")
@@ -27,7 +28,7 @@ public class ProductControllerAdviced {
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setStatus(HttpStatus.NOT_FOUND.value());
         errorDTO.setMessage(userNotFoundException.getMessage());
-        errorDTO.setTimestamp(LocalDateTime.now());
+        errorDTO.setTimestamp(converterData());
 
         return errorDTO;
     }
@@ -40,7 +41,7 @@ public class ProductControllerAdviced {
     ){
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setStatus(HttpStatus.NOT_FOUND.value());
-        errorDTO.setTimestamp(LocalDateTime.now());
+        errorDTO.setTimestamp(converterData());
         errorDTO.setMessage(categoryNotFoundException.getMessage());
         return errorDTO;
     }
@@ -63,8 +64,16 @@ public class ProductControllerAdviced {
         }
         errorDTO.setMessage(sb.toString());
 
-        errorDTO.setTimestamp(LocalDateTime.now());
+        errorDTO.setTimestamp(converterData());
         return errorDTO;
+    }
+
+
+    public LocalDateTime converterData(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        String formattedDate = now.format(formatter);
+        return LocalDateTime.parse(formattedDate, formatter);
     }
 
 }

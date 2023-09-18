@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.henrique.java.backend.Exception.UserErrorException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @ControllerAdvice(basePackages = "com.henrique.java.controller")
 public class UserControllerAdvice {
@@ -20,7 +21,14 @@ public class UserControllerAdvice {
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setStatus(HttpStatus.NOT_FOUND.value());
         errorDTO.setMessage(userErrorException.getMessage());
-        errorDTO.setTimestamp(LocalDateTime.now());
+        errorDTO.setTimestamp(converterData());
         return errorDTO;
+    }
+
+    public LocalDateTime converterData(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        String formattedDate = now.format(formatter);
+        return LocalDateTime.parse(formattedDate, formatter);
     }
 }

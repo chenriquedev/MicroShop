@@ -2,9 +2,12 @@ package com.henrique.java.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.henrique.java.backend.DTO.ProductDTO;
+import org.henrique.java.backend.Exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -16,12 +19,17 @@ public class ProductService {
     public ProductDTO getProductByIdentifier(
             String productIdentifier) {
 
-        log.info(productIdentifier);
-        RestTemplate restTemplate = new RestTemplate();
-        String url = productApiURL +"products/" + productIdentifier;
-        ResponseEntity<ProductDTO> response =
-                restTemplate.getForEntity(url, ProductDTO.class);
-        log.info(response.getBody().toString());
-        return response.getBody();
-}
+        try{
+            RestTemplate restTemplate = new RestTemplate();
+            String url = productApiURL +"products/" + productIdentifier;
+            ResponseEntity<ProductDTO> response =
+                    restTemplate.getForEntity(url, ProductDTO.class);
+            if(response.getStatusCode().is2xxSuccessful()){
+                return response.getBody();
+            }
+        }catch (HttpClientErrorException e){
+            throw new ProductNotFoundException("Products Not Found");
+        }
+        return null;
+    }
 }

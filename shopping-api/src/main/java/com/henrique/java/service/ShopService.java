@@ -7,6 +7,8 @@ import com.henrique.java.repository.ReportRepository;
 import com.henrique.java.repository.ShopRepository;
 import org.henrique.java.backend.DTO.*;
 import org.henrique.java.backend.Exception.ProductNotFoundException;
+import org.henrique.java.backend.Exception.ShopBadRequestException;
+import org.henrique.java.backend.Exception.ShopNotFoundException;
 import org.henrique.java.backend.Exception.UserErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
 public class ShopService {
 
    @Autowired
-    private final ShopRepository repository;
+    private final ShopRepository shopRepository;
 
    private final ReportRepository reportRepository;
 
@@ -34,9 +36,9 @@ public class ShopService {
 
    private final Converter converter;
 
-    public ShopService(ShopRepository repository, ReportRepository reportRepository, Converter converter,
+    public ShopService(ShopRepository shopRepository, ReportRepository reportRepository, Converter converter,
                        ProductService productService, UserService userService) {
-        this.repository = repository;
+        this.shopRepository = shopRepository;
         this.reportRepository = reportRepository;
         this.converter = converter;
         this.productService = productService;
@@ -44,40 +46,36 @@ public class ShopService {
     }
 
     public List<ShopDTO> getAll(){
-        List<Shop> shops = repository.findAll();
-        return shops.stream().map(converter::convertToShopDTO).collect(Collectors.toList());
+        List<Shop> shops = shopRepository.findAll();
+        return shops.stream().map(converter::convertToShopDTO).toList();
     }
 
     public List<ShopDTO> getByUser(String userIdentifier){
-        List<Shop> shops = repository.findAllByUserIdentifier(userIdentifier);
+        List<Shop> shops = shopRepository.findAllByUserIdentifier(userIdentifier);
 
-        return shops.stream().map(converter::convertToShopDTO).collect(Collectors.toList());
+        return shops.stream().map(converter::convertToShopDTO).toList();
     }
 
     public List<ShopDTO> getByDate(ShopDTO dto){
-        List<Shop> shops = repository.findAllByDateGreaterThanEqual(dto.getDate());
-        return shops.stream().map(converter::convertToShopDTO).collect(Collectors.toList());
+        List<Shop> shops = shopRepository.findAllByDateGreaterThanEqual(dto.getDate());
+        return shops.stream().map(converter::convertToShopDTO).toList();
     }
 
-    public ResponseEntity<ShopDTO> findByID(Long productId){
-        Optional<Shop> shops = repository.findById(productId);
-        return shops.map(shop ->
-            ResponseEntity.ok(converter.convertToShopDTO(shop))
-        ).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ShopDTO findByID(Long productId){
+        Optional<Shop> shops = shopRepository.findById(productId);
+        return shops.map(converter::convertToShopDTO)
+                .orElseThrow(() -> new ShopNotFoundException("Shop Not Found"));
     }
 
-    public ResponseEntity<ShopDTO> saveShop(ShopDTO dto, String key){
-        System.out.println(dto.getUserIdentifier() + " Chave: " + key + " Items: " + dto.getItems());
+    public ShopDTO saveShop(ShopDTO dto, String key){
         UserDTO userDTO = userService.getUserByCPF(dto.getUserIdentifier(), key);
         validateProducts(dto.getItems());
-
 
         dto.setTotal(dto.getItems().stream().map(ItemDTO::getPrice).reduce((float) 0 , Float::sum));
         dto.setDate(new Date());
         Shop shop = converter.convertToShop(dto);
-        Shop shopSaved = repository.save(shop);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(converter.convertToShopDTO(shopSaved));
+        Shop shopSaved = shopRepository.save(shop);
+        return converter.convertToShopDTO(shopSaved);
     }
 
     private boolean validateProducts(List<ItemDTO> items){
@@ -98,7 +96,11 @@ public class ShopService {
         return shops.stream().map(converter::convertToShopDTO).collect(Collectors.toList());
     }
 
-    public ResponseEntity<ShopReportDTO> getReportByDate(Date dataInicio, Date dataFim){
-        return ResponseEntity.ok(reportRepository.getReportByDate(dataInicio, dataFim));
+    public ShopReportDTO getReportByDate(Date dataInicio, Date dataFim){
+        ShopReportDTO report = reportRepository.getReportByDate(dataInicio, dataFim);
+        if (report.getCount().equals(0)){
+            throw new ShopNotFoundException("Not Found for this date");
+        }
+        return report;
     }
 }
